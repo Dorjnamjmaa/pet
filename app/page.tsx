@@ -1,69 +1,80 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+
+const pets = [
+  { id: "demo-1", name: "Бөөмий", type: "Нохой", breed: "Самоед · 2 настай", place: "Хан-Уул дүүрэг", image: "https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?auto=format&fit=crop&w=900&q=85", tone: "mint", tag: "Үрчлүүлэхэд бэлэн" },
+  { id: "demo-2", name: "Сүүмий", type: "Муур", breed: "Британ үүлдрийн · 1 настай", place: "Баянзүрх дүүрэг", image: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=900&q=85", tone: "peach", tag: "Шинэ найз" },
+  { id: "demo-3", name: "Банхар", type: "Нохой", breed: "Монгол банхар · 3 настай", place: "Сүхбаатар дүүрэг", image: "https://images.unsplash.com/photo-1551717743-49959800b1f6?auto=format&fit=crop&w=900&q=85", tone: "blue", tag: "Том биетэй" },
+  { id: "demo-4", name: "Өхөөрдөм", type: "Муур", breed: "Эрлийз · 8 сартай", place: "Чингэлтэй дүүрэг", image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=900&q=85", tone: "lavender", tag: "Гэрт өссөн" },
+  { id: "demo-5", name: "Томоо", type: "Нохой", breed: "Корги · 1 настай", place: "Баянгол дүүрэг", image: "https://images.unsplash.com/photo-1612536057832-2ff7ead58194?auto=format&fit=crop&w=900&q=85", tone: "yellow", tag: "Тоглох дуртай" },
+  { id: "demo-6", name: "Цасхан", type: "Муур", breed: "Перс · 2 настай", place: "Хан-Уул дүүрэг", image: "https://images.unsplash.com/photo-1495360010541-f48722b34f7d?auto=format&fit=crop&w=900&q=85", tone: "pink", tag: "Тайван зантай" },
+];
+
+const categories = ["Бүгд", "Нохой", "Муур"];
 
 export default function Home() {
+  const [listings, setListings] = useState(pets);
+  const [category, setCategory] = useState("Бүгд");
+  const [query, setQuery] = useState("");
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [selected, setSelected] = useState<(typeof pets)[number] | null>(null);
+  const [showRegistration, setShowRegistration] = useState(false);
+  const [showAdoption, setShowAdoption] = useState(false);
+  const [notice, setNotice] = useState("");
+  const filtered = useMemo(() => listings.filter((pet) => (category === "Бүгд" || pet.type === category) && `${pet.name} ${pet.breed} ${pet.place}`.toLowerCase().includes(query.toLowerCase())), [category, query, listings]);
+  useEffect(() => { fetch("/api/pets").then((response) => response.json()).then((newPets) => { if (Array.isArray(newPets) && newPets.length) setListings((current) => [...newPets.map((pet) => ({ ...pet, breed: `${pet.breed} · ${pet.age}`, image: pet.image || "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=900&q=85", tag: "Шинээр бүртгэгдсэн", tone: "mint" })), ...current]); }).catch(() => {}); }, []);
+  const toggleFavorite = (name: string) => setFavorites((current) => current.includes(name) ? current.filter((item) => item !== name) : [...current, name]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main>
+      <div className="announcement"><span>🐾</span> Үрчлүүлэх амьтдаа эндээс олоорой <a href="#pets">Амьтадтай танилцах <span>↗</span></a></div>
+      <header className="nav-wrap"><nav className="nav container"><a className="brand" href="#top"><span className="brand-icon">♥</span><span>амьтан<span className="brand-dot">.</span><small>ХАЙРТАЙ НЬ ТААРУУЛЪЯ</small></span></a><div className="nav-links"><a href="#pets">Үрчлүүлэх амьтад</a><a href="#how">Үрчлэлтийн үйл явц</a><a href="#stories">Эзэд ба тэдний түүх</a></div><button className="button button-dark nav-cta" onClick={() => setShowRegistration(true)}>Амьтнаа бүртгүүлэх <span>↗</span></button><button className="menu-button" aria-label="Цэс нээх">☰</button></nav></header>
+      <section className="hero container" id="top"><div className="hero-copy"><div className="eyebrow"><span className="eyebrow-dot"/> ШИНЭ ГЭР БҮЛЭЭ ЭНДЭЭС ОЛООРОЙ</div><h1>Тэдэнд гэр хэрэгтэй.<br/>Танд <span>найз.</span></h1><p className="hero-text">Шинэ эзнээ хүлээж буй нохой, мууртай танилцаарай.</p><div className="hero-actions"><a className="button button-dark" href="#pets">Амьтадтай танилцах <span>→</span></a><a className="text-link" href="#how">Үрчлэлтийн талаар <span>↗</span></a></div><div className="social-proof"><div className="avatar-stack"><i>🐕</i><i>🐈</i><i>🐶</i><i>🐱</i></div><div><b>1,200+</b><span>амьтан шинэ гэр бүл бүлтэй болсон</span></div><span className="proof-stars">★★★★★</span></div></div><div className="hero-visual"><div className="hero-image"><img src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=1200&q=90" alt="Инээмсэглэсэн голден ретривер"/><span className="image-sparkle">✳</span><div className="photo-caption"><div className="caption-heart">♥</div><div><b>Сайн уу, намайг Номи гэдэг!</b><span>Би шинэ гэр бүл бүлээ хайж байна 🐾</span></div><span className="caption-arrow">↗</span></div></div><div className="hero-sticker sticker-top">✿ <span>ХАЙРЛААР ДҮҮРЭН</span></div><div className="hero-sticker sticker-bottom">Монголдоо бүтээв <span>♥</span></div><span className="hero-doodle">✳</span></div></section>
+      <section className="stats-strip"><div className="container stats"><div><b>1,248</b><span>амьтан шинэ гэр бүл бүлтэй болсон</span></div><div><b>320<span>+</span></b><span>үрчлэн авсан эзэн</span></div><div><b>100<span>%</span></b><span>үрчлэлт үнэ төлбөргүй</span></div><div className="stat-note">Нэг амьтан үрчилснээр<br/>хоёр амьдралд аз жаргал нэмнэ <span>↗</span></div></div></section>
+      <section className="pets-section container" id="pets"><div className="section-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/> ШИНЭ ЭЗНЭЭ ХҮЛЭЭЖ БУЙ АМЬТАД</div><h2>Ирээдүйн найзтайгаа <span>танилц.</span></h2><p>Амьтнаа сонгоод, дэлгэрэнгүйг нь үзээрэй.</p></div><a href="#pets" className="text-link see-all">Бүх амьтдыг үзэх <span>→</span></a></div><div className="filters"><div className="category-tabs">{categories.map((item) => <button key={item} onClick={() => setCategory(item)} className={category === item ? "active" : ""}>{item === "Нохой" ? "🐕 " : item === "Муур" ? "🐈 " : ""}{item}{item === "Бүгд" && <span>06</span>}</button>)}</div><label className="search"><span>⌕</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Нэр, үүлдэр, дүүргээр хайх"/><kbd>⌘ K</kbd></label></div><div className="pet-grid">{filtered.map((pet, index) => <article className="pet-card" key={pet.name}><button className="pet-photo" onClick={() => setSelected(pet)} aria-label={`${pet.name} дэлгэрэнгүй үзэх`}><img src={pet.image} alt={pet.name}/><span className="pet-tag">{pet.tag}</span><span className="photo-number">0{index + 1} / 06</span></button><div className="pet-info"><div><h3>{pet.name} <span>{pet.type === "Нохой" ? "🐶" : "🐱"}</span></h3><p>{pet.breed}</p><small>⌖ &nbsp;{pet.place}</small></div><button className={`favorite ${favorites.includes(pet.name) ? "liked" : ""}`} onClick={() => toggleFavorite(pet.name)} aria-label="Дуртай амьтанд нэмэх">{favorites.includes(pet.name) ? "♥" : "♡"}</button></div><button className="meet-button" onClick={() => setSelected(pet)}>Танилцах хүсэлт илгээх <span>↗</span></button></article>)}</div>{filtered.length === 0 && <div className="empty-state">Таны хайлтад тохирох амьтан олдсонгүй. Хайлтын үгээ өөрчлөөд үзээрэй. 🐾</div>}<div className="load-more"><span>{filtered.length} амьтан харуулж байна</span><button onClick={() => {setCategory("Бүгд"); setQuery("")}}>Бүх амьтдыг үзэх <span>→</span></button></div></section>
+      <section className="promise" id="how"><div className="container promise-inner"><div><div className="eyebrow"><span className="eyebrow-dot"/> ҮРЧЛЭЛТИЙН ҮЕ ШАТ</div><h2>Шинэ гэр бүлтэй болох нь<br/><span>энгийн.</span></h2><p>Амьтантай танилцаж, асран хамгаалагчтай нь холбоо бариарай.</p><a className="button button-dark" href="mailto:hello@amitan.mn?subject=Үрчлэлтийн%20талаар%20асуух">Холбоо барих <span>→</span></a></div><div className="steps"><div className="step"><span className="step-icon">⌕</span><div><small>АЛХАМ 01</small><h3>Амьтнаа сонго</h3><p>Зан араншин, насны мэдээллийг уншаарай.</p></div><span className="step-num">01</span></div><div className="step"><span className="step-icon">♡</span><div><small>АЛХАМ 02</small><h3>Танилцах хүсэлт илгээ</h3><p>Танилцах хүсэлтээ илгээнэ үү.</p></div><span className="step-num">02</span></div><div className="step"><span className="step-icon">⌂</span><div><small>АЛХАМ 03</small><h3>Танилцаж уулз</h3><p>Асран хамгаалагчтай нь уулзах цагаа тохироорой.</p></div><span className="step-num">03</span></div></div></div></section>
+      <section className="story container" id="stories"><span className="story-mark">“</span><div><div className="eyebrow"><span className="eyebrow-dot"/> ЭЗЭНТЭЙ БОЛСОН ТҮҮХ</div><blockquote>“Гэртээ ирэхэд минь баяртайгаар угтдаг болсноос хойш өдөр бүр <span>илүү дулаахан</span> санагддаг болсон.”</blockquote><p>— Энхжин, Бөөмийн эзэн · Хамтдаа 8 сар</p></div><div className="story-photo"><img src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&w=800&q=85" alt="Эзэн нохойтойгоо хамт"/><span>♥</span></div></section>
+      <section className="cta-band"><div className="container cta-inner"><div><div className="eyebrow"><span className="eyebrow-dot"/> ХАЙРАА ХУВААЛЦААРАЙ</div><h2>Таны халамж нэг амьтанд<br/><span>шинэ гэр бүл</span> бэлэглэнэ.</h2></div><button className="button button-light" onClick={() => setShowRegistration(true)}>Амьтнаа бүртгүүлэх <span>↗</span></button><span className="cta-paw">🐾</span></div></section>
+      <footer><div className="container footer-main"><a className="brand" href="#top"><span className="brand-icon">♥</span><span>амьтан<span className="brand-dot">.</span><small>ХАЙРТАЙ НЬ ТААРУУЛЪЯ</small></span></a><p>Амьтан бүр халамжтай эзэнтэй байг. 🐾</p><div className="footer-links"><a href="#pets">Үрчлүүлэх амьтад</a><a href="#how">Үрчлэлтийн үйл явц</a><a href="mailto:hello@amitan.mn">Холбоо барих</a><a href="#top">Instagram ↗</a></div></div><div className="container footer-bottom"><span>© 2026 Амьтан. Хайртай нь тааруулъя.</span><span>Улаанбаатар, Монгол 🇲🇳</span></div></footer>
+      {selected && <div className="modal-backdrop" onClick={() => setSelected(null)}><section className="pet-modal" onClick={(event) => event.stopPropagation()}><button className="modal-close" onClick={() => setSelected(null)} aria-label="Цонх хаах">×</button><img src={selected.image} alt={selected.name}/><div className="modal-content"><span className="pet-tag">{selected.tag}</span><h2>{selected.name} <span>{selected.type === "Нохой" ? "🐶" : "🐱"}</span></h2><p>{selected.breed} · {selected.place}</p><p className="modal-note">{"description" in selected && typeof selected.description === "string" ? selected.description : `Сайн уу, намайг ${selected.name} гэдэг. Би халамжтай, аюулгүй гэр бүлтэй болохыг хүсэж байна. Надтай танилцах хүсэлт илгээгээрэй. 🐾`}</p><button className="button button-dark" onClick={() => { setShowAdoption(true); }}>Танилцах хүсэлт илгээх <span>↗</span></button></div></section></div>}
+      {showRegistration && <RegistrationModal onClose={() => setShowRegistration(false)} onSaved={(pet) => { setListings((current) => [{ ...pet, breed: `${pet.breed} · ${pet.age}`, tag: "Шинээр бүртгэгдсэн", tone: "mint" }, ...current]); setShowRegistration(false); setNotice("Бүртгэл амжилттай хадгалагдлаа. Таны амьтан жагсаалтад нэмэгдлээ."); }} />}
+      {showAdoption && selected && <AdoptionModal pet={selected} onClose={() => setShowAdoption(false)} onSent={() => { setShowAdoption(false); setSelected(null); setNotice("Хүсэлтийг хүлээн авлаа. Амьтны асран хамгаалагч тантай холбогдоно."); }} />}
+      {notice && <div className="toast" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Мэдэгдэл хаах">×</button></div>}
+    </main>
   );
+}
+
+type NewPet = { id: string; name: string; type: string; breed: string; age: string; gender: string; place: string; image: string; description: string; vaccinated: boolean; contactName: string; contactPhone: string };
+
+function RegistrationModal({ onClose, onSaved }: { onClose: () => void; onSaved: (pet: NewPet) => void }) {
+  const [imageData, setImageData] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setError(""); setSaving(true);
+    const form = new FormData(event.currentTarget);
+    const data = Object.fromEntries(form.entries());
+    try {
+      const response = await fetch("/api/pets", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...data, vaccinated: data.vaccinated === "on", image: imageData }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Бүртгэл хадгалж чадсангүй.");
+      onSaved({ ...result, image: result.image || "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=900&q=85" });
+    } catch (err) { setError(err instanceof Error ? err.message : "Алдаа гарлаа. Дахин оролдоно уу."); }
+    finally { setSaving(false); }
+  }
+  return <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className="form-modal registration-modal"><button className="modal-close" onClick={onClose} aria-label="Цонх хаах">×</button><div className="form-heading"><span className="registration-paw">🐾</span><div className="registration-title"><div className="eyebrow">ШИНЭ ГЭР БҮЛЭЭ ХАМТДАА ОЛЪЁ</div><h2>Амьтнаа бүртгүүлэх</h2><p>Амьтныхаа тухай хэдхэн мэдээлэл оруулаад халамжтай эзнийг нь олоход туслаарай.</p></div><span className="free-badge">ҮНЭГҮЙ · 2 МИНУТ</span></div><div className="form-steps"><span className="current"><i>01</i> Амьтны мэдээлэл</span><b></b><span><i>02</i> Эзний мэдээлэл</span><b></b><span><i>03</i> Нийтлэх</span></div><form onSubmit={submit}><div className="registration-section-title"><span>01</span><div><h3>Амьтны тухай</h3><p>Шинэ эзэнд нь танилцуулах үндсэн мэдээлэл</p></div></div><div className="form-grid"><label>Амьтны нэр <em>*</em><input name="name" required maxLength={60} placeholder="Жишээ нь: Бөөмий"/></label><label>Амьтны төрөл <em>*</em><select name="type" required defaultValue=""><option value="" disabled>Төрөл сонгох</option><option>Нохой</option><option>Муур</option><option>Бусад</option></select></label><label>Үүлдэр <span className="optional-label">Заавал биш</span><input name="breed" maxLength={80} placeholder="Жишээ нь: Монгол банхар"/></label><label>Нас <em>*</em><input name="age" required maxLength={40} placeholder="Жишээ нь: 2 настай"/></label><label>Хүйс <em>*</em><select name="gender" required defaultValue=""><option value="" disabled>Хүйс сонгох</option><option>Эр</option><option>Эм</option><option>Тодорхойгүй</option></select></label><label>Байршил <em>*</em><select name="place" required defaultValue=""><option value="" disabled>Дүүрэг сонгох</option>{["Баянзүрх", "Баянгол", "Сүхбаатар", "Сонгинохайрхан", "Хан-Уул", "Чингэлтэй", "Налайх", "Багануур", "Багахангай", "Орон нутаг"].map((place) => <option key={place}>{place}</option>)}</select></label></div><label className="full-label">Танилцуулга <em>*</em><textarea name="description" required minLength={15} maxLength={1200} rows={3} placeholder="Зан араншин, өдөр тутмын дадал, шинэ эзэнд тавих нөхцөлийн талаар бичээрэй."/><small className="field-hint">Дэлгэрэнгүй танилцуулга нь тохирох эзнээ олоход тусална.</small></label><div className="upload-heading">Зураг <span className="optional-label">Заавал биш</span></div><label className={`upload-box ${imageData ? "has-image" : ""}`}>{imageData ? <img src={imageData} alt="Сонгосон зураг"/> : <span className="upload-icon">↑</span>}<span><b>{imageData ? "Зураг сонгогдлоо" : "Зургаа сонгох"}</b><small>Амьтны тод, гэрэл сайтай зураг оруулна уу · JPG, PNG, WebP · 5 МБ хүртэл</small></span><input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (!file) return; if (file.size > 5 * 1024 * 1024) { setError("Зургийн хэмжээ 5 МБ-аас бага байх ёстой."); return; } const reader = new FileReader(); reader.onload = () => setImageData(String(reader.result)); reader.readAsDataURL(file); }}/></label><label className="check-row"><input type="checkbox" name="vaccinated"/> Вакцинд хамрагдсан</label><div className="registration-section-title contact-section-title"><span>02</span><div><h3>Таны холбоо барих мэдээлэл</h3><p>Хүсэлт ирвэл холбогдох мэдээлэл</p></div></div><div className="form-grid"><label>Таны нэр <em>*</em><input name="contactName" required maxLength={80} placeholder="Эзэн эсвэл асран хамгаалагч"/></label><label>Утасны дугаар <em>*</em><input name="contactPhone" required type="tel" pattern="[+]?[0-9 ()-]{8,20}" placeholder="Жишээ нь: 9911 2233"/></label></div><p className="privacy-note"><span>🔒</span> Утасны дугаар тань нийтэд харагдахгүй. Үрчлүүлэх хүсэлт ирэхэд тантай холбогдоход ашиглана.</p>{error && <p className="form-error" role="alert">{error}</p>}<div className="form-actions"><button type="button" className="cancel-button" onClick={onClose}>Болих</button><button className="button button-dark" disabled={saving}>{saving ? "Бүртгэж байна…" : "Амьтнаа бүртгүүлэх"} <span>→</span></button></div><p className="form-consent">Бүртгүүлснээр оруулсан мэдээллээ нийтлэхийг зөвшөөрч байна.</p></form></section></div>;
+}
+
+function AdoptionModal({ pet, onClose, onSent }: { pet: { id: string; name: string }; onClose: () => void; onSent: () => void }) {
+  const [error, setError] = useState(""); const [saving, setSaving] = useState(false);
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setError(""); setSaving(true);
+    const form = new FormData(event.currentTarget);
+    try {
+      const response = await fetch("/api/requests", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ petId: pet.id, petName: pet.name, name: form.get("name"), phone: form.get("phone"), message: form.get("message") }) });
+      const result = await response.json(); if (!response.ok) throw new Error(result.error || "Хүсэлт илгээж чадсангүй."); onSent();
+    } catch (err) { setError(err instanceof Error ? err.message : "Алдаа гарлаа."); } finally { setSaving(false); }
+  }
+  return <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className="form-modal adoption-modal"><button className="modal-close" onClick={onClose} aria-label="Цонх хаах">×</button><div className="form-heading"><span>💌</span><div><div className="eyebrow">ТАНИЛЦАХ ХҮСЭЛТ</div><h2>{pet.name}-тай танилцах</h2><p>Холбоо барих мэдээллээ үлдээгээрэй. Асран хамгаалагчид хүсэлтийг тань дамжуулна.</p></div></div><form onSubmit={submit}><label className="full-label">Таны нэр *<input name="name" required maxLength={80} placeholder="Нэрээ бичнэ үү"/></label><label className="full-label">Утасны дугаар *<input name="phone" required type="tel" pattern="[+]?[0-9 ()-]{8,20}" placeholder="9911 2233"/></label><label className="full-label">Товч мэндчилгээ<textarea name="message" maxLength={800} rows={3} placeholder="Өөрийнхөө тухай болон амьтныг хэрхэн асрах талаар бичиж болно."/></label>{error && <p className="form-error" role="alert">{error}</p>}<div className="form-actions"><button type="button" className="cancel-button" onClick={onClose}>Буцах</button><button className="button button-dark" disabled={saving}>{saving ? "Илгээж байна…" : "Хүсэлт илгээх"} <span>→</span></button></div></form></section></div>;
 }
